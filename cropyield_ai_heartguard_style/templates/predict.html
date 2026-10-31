@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Yield Prediction | CropYield AI{% endblock %}
+{% block content %}
+<section class="page-head"><div><div class="eyebrow">PREDICTION WORKSPACE</div><h1>Crop yield <em>prediction</em></h1><p>Enter field conditions and generate an estimate from the selected crop model.</p></div><span class="chip large-chip">ML REGRESSION + SHAP</span></section>
+<div class="prediction-layout">
+ <section class="card form-card"><div class="card-heading"><div><div class="eyebrow">STEP 01 / INPUT</div><h2>Field conditions</h2><p>Select a crop and enter field conditions. Leave unknown values blank; the model fills missing values automatically.</p><div class="helper-pills"><span>✓ Numeric validation</span><span>✓ Crop-specific fields</span><span>✓ Optional unknowns</span></div></div></div>
+ <form id="predictionForm"><div class="crop-select-wrap"><label for="crop">Crop type</label><select id="crop" name="crop"><option value="Onion">Onion</option><option value="Sugarcane">Sugarcane</option></select></div>
+ <div id="featureFields" class="feature-grid"><div class="loading-line">Loading model features…</div></div>
+ <div class="form-actions"><button class="btn primary" type="submit" id="predictBtn">Predict yield <span>→</span></button><button class="btn secondary" type="button" id="exampleBtn">Fill example</button><button class="btn secondary" type="button" id="clearBtn">Reset fields</button></div><p class="form-hint">Tip: use measured soil and weather values where possible. Example values are for testing the interface only.</p><div id="formError" class="form-error hidden"></div></form>
+ </section>
+ <aside class="right-stack"><section class="result-card" id="resultCard"><div class="result-icon">✳</div><div class="eyebrow">PREDICTION RESULT</div><h2 id="yieldValue">—</h2><div class="result-unit">tonnes per hectare</div><div class="result-divider"></div><div class="result-meta"><span>Selected crop</span><b id="resultCrop">Not run yet</b></div><div class="result-meta"><span>Assessment ID</span><b id="resultId">—</b></div><div class="result-foot">Use as an experimental estimate, not a guaranteed yield.</div></section>
+ <section class="card explain-card"><div class="card-heading"><div><div class="eyebrow">STEP 02 / EXPLAIN</div><h2>Why this prediction?</h2><p>Use SHAP to inspect feature contributions for this specific estimate.</p></div></div><button class="btn secondary full-width" id="explainBtn" disabled>✧ Explain with SHAP</button><div id="shapEmpty" class="small-empty">Make a prediction to enable the explanation.</div><div id="shapResults" class="hidden"><div class="shap-chart-wrap"><canvas id="shapChart"></canvas></div><p id="shapNote" class="shap-note"></p><div id="shapRows" class="shap-rows"></div></div></section></aside>
+</div>
+{% endblock %}
+{% block scripts %}<script>window.CROP_MODELS={{ crops|tojson }};window.MODELS_AVAILABLE={{ models.keys()|list|tojson }};</script>{% endblock %}

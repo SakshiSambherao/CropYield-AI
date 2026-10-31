@@ -1,0 +1,88 @@
+{% extends "base.html" %}{% block title %}Analytics | CropYield AI{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <div class="eyebrow">DATA & PERFORMANCE</div>
+    <h1>Analytics & <em>graphs</em></h1>
+    <p>Explore the dataset distribution and compare trained model metrics.</p>
+  </div><span class="chip large-chip">SOURCE DATA</span>
+</section>
+{% if status. %}<div class="notice warning"><b>Crop Data</b><span>Metrics shown here are not real-world
+    validation.</span></div>{% endif %}
+<section class="metric-grid two">
+  <article class="metric-card">
+    <div class="metric-top"><span>Onion records</span><span class="metric-icon green">O</span></div>
+    <h2>{{ crop_counts.Onion }}</h2>
+    <div class="metric-foot">Filtered dataset rows</div>
+  </article>
+  <article class="metric-card">
+    <div class="metric-top"><span>Sugarcane records</span><span class="metric-icon blue">S</span></div>
+    <h2>{{ crop_counts.Sugarcane }}</h2>
+    <div class="metric-foot">Filtered dataset rows</div>
+  </article>
+</section>
+<section class="content-grid">
+  <article class="card">
+    <div class="card-heading">
+      <div>
+        <div class="eyebrow">TARGET DISTRIBUTION</div>
+        <h2>Yield by crop</h2>
+        <p>Mean, median, minimum and maximum yield.</p>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="yieldStatsChart"></canvas></div>
+  </article>
+  <article class="card">
+    <div class="card-heading">
+      <div>
+        <div class="eyebrow">MODEL EVALUATION</div>
+        <h2>Validation metrics</h2>
+        <p>Random 80/20 holdout scores from the training script.</p>
+      </div>
+    </div>
+    <div class="metric-list">{% for crop in crops %}<div class="metric-list-row">
+        <div><b>{{ crop }}</b><small>MAE / RMSE / R²</small></div>
+        <div class="metric-values">{% if crop in metrics %}<span>MAE <b>{{ metrics[crop].mae if metrics[crop].mae is
+              defined else metrics[crop].get('mae','—') }}</b></span><span>RMSE <b>{{ metrics[crop].rmse if
+              metrics[crop].rmse is defined else metrics[crop].get('rmse','—') }}</b></span><span>R² <b>{{
+              metrics[crop].r2 if metrics[crop].r2 is defined else metrics[crop].get('r2','—') }}</b></span>{% else
+          %}<span>Model unavailable</span>{% endif %}</div>
+      </div>{% endfor %}</div>
+  </article>
+</section>
+<section class="card">
+  <div class="card-heading">
+    <div>
+      <div class="eyebrow">SUMMARY TABLE</div>
+      <h2>Descriptive statistics</h2>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Crop</th>
+          <th>Records</th>
+          <th>Mean yield</th>
+          <th>Median</th>
+          <th>Minimum</th>
+          <th>Maximum</th>
+        </tr>
+      </thead>
+      <tbody>{% for crop in crops %}{% set s=yield_summary.get(crop,{}) %}<tr>
+          <td><span class="crop-name">{{ crop }}</span></td>
+          <td>{{ s.get('count',0) }}</td>
+          <td>{{ s.get('mean','—') }}</td>
+          <td>{{ s.get('median','—') }}</td>
+          <td>{{ s.get('min','—') }}</td>
+          <td>{{ s.get('max','—') }}</td>
+        </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  const stats = {{ yield_summary| tojson }};
+  new Chart(document.getElementById('yieldStatsChart'), { type: 'bar', data: { labels: ['Onion', 'Sugarcane'], datasets: [{ label: 'Mean yield (tonnes/ha)', data: [stats.Onion?.mean ?? 0, stats.Sugarcane?.mean ?? 0], backgroundColor: ['#328456', '#91c9a4'], borderRadius: 8 }, { label: 'Median yield (tonnes/ha)', data: [stats.Onion?.median ?? 0, stats.Sugarcane?.median ?? 0], backgroundColor: ['#82b998', '#c4e3cf'], borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: '#edf1ed' } }, x: { grid: { display: false } } } } });
+</script>{% endblock %}

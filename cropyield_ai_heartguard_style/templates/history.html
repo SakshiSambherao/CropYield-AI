@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}History | CropYield AI{% endblock %}
+{% block content %}
+<section class="page-head"><div><div class="eyebrow">ASSESSMENT LOG</div><h1>Prediction <em>history</em></h1><p>Review previous estimates saved on this computer.</p></div><div class="head-actions"><button class="btn secondary" id="clearHistoryBtn">Clear history</button><a class="btn primary" href="{{ url_for('predict_page') }}">New prediction →</a></div></section>
+<section class="card"><div class="card-heading"><div><div class="eyebrow">ALL ASSESSMENTS</div><h2>Saved predictions</h2></div><span class="chip">{{ history|length }} records</span></div>
+{% if history %}<div class="table-wrap"><table><thead><tr><th>ID</th><th>Crop</th><th>Predicted yield</th><th>Date & time</th><th>Action</th></tr></thead><tbody>{% for item in history %}<tr><td>#{{ item.id }}</td><td><span class="crop-name">{{ item.crop }}</span></td><td><b>{{ '%.3f'|format(item.predicted_yield) }}</b> <small>t/ha</small></td><td>{{ item.created_at.replace('T',' ') }}</td><td><button class="icon-button delete-one" data-id="{{ item.id }}" title="Delete prediction">×</button></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state"><span>◷</span><b>Nothing here yet</b><p>Run your first prediction to build your history.</p><a class="btn primary" href="{{ url_for('predict_page') }}">Start prediction</a></div>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}{% block title %}About | CropYield AI{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <div class="eyebrow">PROJECT OVERVIEW</div>
+    <h1>About <em>CropYield AI</em></h1>
+    <p>An academic machine-learning prototype for crop yield estimation and model explainability.</p>
+  </div>
+</section>
+<section class="card about-hero">
+  <div class="about-symbol">✳</div>
+  <div>
+    <div class="eyebrow">PROJECT GOAL</div>
+    <h2>Make model predictions easier to understand.</h2>
+    <p>This application uses separate ExtraTrees regression pipelines for Onion and Sugarcane. SHAP provides local
+      feature contributions to help inspect why a prediction differs from the model's baseline.</p>
+  </div>
+</section>
+<section class="content-grid">
+  <article class="card">
+    <div class="eyebrow">TECH STACK</div>
+    <h2>Frontend & backend</h2>
+    <div class="tech-list">
+      <div><b>01</b><span><strong>HTML / CSS / JavaScript</strong><small>Responsive dashboard, forms and
+            charts</small></span></div>
+      <div><b>02</b><span><strong>Python Flask</strong><small>Pages, JSON APIs and input validation</small></span></div>
+      <div><b>03</b><span><strong>Scikit-learn</strong><small>ExtraTrees yield regression models</small></span></div>
+      <div><b>04</b><span><strong>SHAP</strong><small>Explain feature contributions for a prediction</small></span>
+      </div>
+      <div><b>05</b><span><strong>SQLite</strong><small>Local prediction history</small></span></div>
+    </div>
+  </article>
+  <article class="card">
+    <div class="eyebrow">DATA STATUS</div>
+    <h2>Dataset readiness</h2>
+    <div class="data-status"><span class="status-indicator {{ 'ready' if status.loaded else 'missing' }}"></span>
+      <div><b>{{ 'Dataset loaded' if status.loaded else 'Dataset unavailable' }}</b>
+        <p>{{ status.rows }} filtered rows · Onion and Sugarcane</p>
+      </div>
+    </div>{% if status. %}<div class="notice warning compact"><b>Research limitation</b><span>Dataset rows are
+        labelled Crop Data. Model performance should not be reported as real-world accuracy.</span></div>{% else %}<p
+      class="muted">Confirm dataset provenance and validate against independent real farm records before drawing
+      agricultural conclusions.</p>{% endif %}
+    <hr>
+    <h3>How to read SHAP</h3>
+    <p class="muted">Positive SHAP values push the prediction higher than the model baseline; negative values push it
+      lower. Contributions describe model behaviour, not proof of causation.</p>
+  </article>
+</section>
+{% endblock %}

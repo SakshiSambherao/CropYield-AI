@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}CropYield AI{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-logo">✳</span><span><b>CropYield AI</b><small>AGRI INTELLIGENCE</small></span></a>
+  <div class="nav-label">WORKSPACE</div>
+  <nav>
+    <a class="{{ 'active' if active=='dashboard' else '' }}" href="{{ url_for('dashboard') }}"><span>▦</span> Dashboard</a>
+    <a class="{{ 'active' if active=='predict' else '' }}" href="{{ url_for('predict_page') }}"><span>⌁</span> Yield prediction</a>
+    <a class="{{ 'active' if active=='history' else '' }}" href="{{ url_for('history_page') }}"><span>◷</span> Prediction history</a>
+    <a class="{{ 'active' if active=='analytics' else '' }}" href="{{ url_for('analytics_page') }}"><span>▥</span> Analytics & graphs</a>
+    <a class="{{ 'active' if active=='about' else '' }}" href="{{ url_for('about_page') }}"><span>ⓘ</span> About project</a>
+  </nav>
+  <div class="sidebar-bottom"><div class="status-light"></div><div><b>Local ML workspace</b><small>Flask · Scikit-learn · SHAP</small></div></div>
+</aside>
+<main class="main">
+  <header class="topbar"><div class="mobile-brand">✳ CropYield AI</div><div class="top-actions"><span class="live-dot"></span><span>Local environment</span><span class="avatar">CY</span></div></header>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+  {% block content %}{% endblock %}
+  <footer>CropYield AI <span>•</span> Onion & Sugarcane Yield Intelligence</footer>
+</main>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body></html>

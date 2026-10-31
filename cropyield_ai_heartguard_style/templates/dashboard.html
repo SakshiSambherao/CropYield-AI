@@ -1,0 +1,285 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}Dashboard | CropYield AI{% endblock %}
+
+{% block content %}
+
+<section class="page-head">
+  <div>
+    <div class="eyebrow">AGRICULTURE INTELLIGENCE / OVERVIEW</div>
+    <h1>Good decisions start with <em>better insights.</em></h1>
+    <p>Predict crop yield, explore model behaviour, and review previous assessments.</p>
+  </div>
+
+  <a class="btn primary" href="{{ url_for('predict_page') }}">
+    New prediction <span>↗</span>
+  </a>
+</section>
+
+{% if not models %}
+<div class="notice danger">
+  <b>Models unavailable</b>
+  <span>
+    {{ status.message }}
+    Ensure the CSV is present in the data folder and restart the app.
+  </span>
+</div>
+{% endif %}
+
+<section class="metric-grid">
+
+  <article class="metric-card">
+    <div class="metric-top">
+      <span>Supported crops</span>
+      <span class="metric-icon green">♧</span>
+    </div>
+    <h2>02</h2>
+    <div class="metric-foot">Onion and Sugarcane</div>
+  </article>
+
+  <article class="metric-card">
+    <div class="metric-top">
+      <span>Total predictions</span>
+      <span class="metric-icon blue">↗</span>
+    </div>
+    <h2>{{ total_predictions }}</h2>
+    <div class="metric-foot">Saved to local history</div>
+  </article>
+
+  <article class="metric-card">
+    <div class="metric-top">
+      <span>Latest predicted yield</span>
+      <span class="metric-icon gold">✧</span>
+    </div>
+    <h2>
+      {% if latest_yield is not none %}
+      {{ '%.2f'|format(latest_yield) }}
+      {% else %}
+      —
+      {% endif %}
+    </h2>
+    <div class="metric-foot">Tonnes per hectare</div>
+  </article>
+
+  <article class="metric-card">
+    <div class="metric-top">
+      <span>Dataset records</span>
+      <span class="metric-icon purple">▤</span>
+    </div>
+    <h2>{{ status.rows }}</h2>
+    <div class="metric-foot">
+      {% if status.loaded %}
+      Loaded records
+      {% else %}
+      Dataset unavailable
+      {% endif %}
+    </div>
+  </article>
+
+</section>
+
+<section class="content-grid">
+
+  <article class="card wide-card">
+    <div class="card-heading">
+      <div>
+        <div class="eyebrow">DATA EXPLORER</div>
+        <h2>Yield distribution</h2>
+        <p>Compare the target yield values available in the source dataset.</p>
+      </div>
+      <span class="chip">Dataset overview</span>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas id="yieldDistributionChart"></canvas>
+    </div>
+  </article>
+
+  <article class="card model-card">
+    <div class="card-heading">
+      <div>
+        <div class="eyebrow">MODEL STATUS</div>
+        <h2>Crop models</h2>
+      </div>
+      <span class="status-badge">
+        <span class="live-dot"></span> Live
+      </span>
+    </div>
+
+    {% for crop in crops %}
+    <div class="model-row">
+      <div class="crop-icon">
+        {{ 'O' if crop == 'Onion' else 'S' }}
+      </div>
+
+      <div class="model-info">
+        <b>{{ crop }}</b>
+        <small>
+          {% if crop in models %}
+          ExtraTrees regression
+          {% else %}
+          Model not loaded
+          {% endif %}
+        </small>
+      </div>
+
+      <span class="model-status {{ 'ready' if crop in models else 'missing' }}">
+        {{ 'Ready' if crop in models else 'Missing' }}
+      </span>
+    </div>
+
+    {% if crop in metrics %}
+    <div class="mini-metrics">
+      <span>
+        MAE
+        <b>
+          {% if metrics[crop].mae is defined %}
+          {{ metrics[crop].mae }}
+          {% else %}
+          {{ metrics[crop].get('mae', '—') }}
+          {% endif %}
+        </b>
+      </span>
+
+      <span>
+        R²
+        <b>
+          {% if metrics[crop].r2 is defined %}
+          {{ metrics[crop].r2 }}
+          {% else %}
+          {{ metrics[crop].get('r2', '—') }}
+          {% endif %}
+        </b>
+      </span>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <a class="text-link" href="{{ url_for('predict_page') }}">
+      Run a prediction <span>→</span>
+    </a>
+  </article>
+
+</section>
+
+<section class="card">
+  <div class="card-heading">
+    <div>
+      <div class="eyebrow">RECENT ACTIVITY</div>
+      <h2>Prediction history</h2>
+      <p>Your latest saved yield assessments.</p>
+    </div>
+
+    <a class="text-link" href="{{ url_for('history_page') }}">
+      View all →
+    </a>
+  </div>
+
+  {% if history %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Crop</th>
+          <th>Predicted yield</th>
+          <th>Date &amp; time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for item in history %}
+        <tr>
+          <td>
+            <span class="crop-name">{{ item.crop }}</span>
+          </td>
+
+          <td>
+            <b>{{ '%.3f'|format(item.predicted_yield) }}</b>
+            <small>t/ha</small>
+          </td>
+
+          <td>{{ item.created_at.replace('T', ' ') }}</td>
+
+          <td>
+            <span class="table-status">Completed</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <span>◷</span>
+    <b>No predictions yet</b>
+    <p>Your saved predictions will appear here.</p>
+    <a class="btn primary" href="{{ url_for('predict_page') }}">
+      Create first prediction
+    </a>
+  </div>
+  {% endif %}
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+  fetch('/api/status')
+    .then(response => response.json())
+    .then(statusData => {
+      const counts = {{ by_crop | tojson
+    }};
+  const canvas = document.getElementById('yieldDistributionChart');
+
+  if (!canvas) {
+    return;
+  }
+
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: ['Onion', 'Sugarcane'],
+      datasets: [{
+        label: 'Source records',
+        data: [
+          counts.Onion || 0,
+          counts.Sugarcane || 0
+        ],
+        backgroundColor: ['#328456', '#91c9a4'],
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: '#edf1ed'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+        })
+        .catch (error => {
+    console.error('Unable to load dashboard chart:', error);
+  });
+</script>
+{% endblock %}
+```
